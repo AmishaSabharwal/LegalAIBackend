@@ -1,0 +1,46 @@
+draft_task:
+  description: >
+    Your task is draft a petition contract based on lawyer prompts only.
+    {query}
+    The petition must clearly identify the terms of the agreement, the breach, and the specific remedy sought
+    The contract should contain:
+    - Title(Title of the petition, court’s name, case number0
+    - Date(Contract signing date)
+    - Parties(The names of the parties; for instance the petitioner who brings the petition and the respondent who the petition is filed against)
+    - General Provisions: 
+      a. Governing Law & Jurisdiction (Which state’s law applies)
+      b. Entire Agreement Clause (Prevents reliance on previous discussions)
+      c. Notices (Where official communications should be sent)
+      d. Costs of Legal Action (Who pays in case of disputes)
+      e. Arbitration Clause (Mandatory arbitration vs. litigation)
+      f. Force Majeure Clause (Exemptions for unforeseeable events)
+    - Notarization(Include if the document requires official registration or legal validity. It is s notary’s stamp)
+    - Number of Original Contracts(Number signed contract)
+    - Governing Law, Jurisdiction and Arbitration
+    - Notarization Procedure:
+      - Parties goals and expectation from contract.
+      - Parties position in respect to strength, weaknesses and bargaining. This section requires a careful explanation of the legal principles and laws that support the petitioner's claim. This includes references to statutes, case law, or constitutional provisions relevant to the case.
+      - Include critical and non-critical terms to determine area of compromise.
+      - Include resolution of the disagreement.
+      - Until a final definitive agreement is reached, all draft agreements, term sheets or letters of intent should clearly state the following:
+        "This document is not intended to create or constitute any legally binding obligation between the parties hereto, and no party shall have any liability or obligation to another with respect to this document until a fully integrated definitive agreement is prepared, authorized, executed, and delivered by all parties.""
+      - In some circumstances, a party will insist on using its form contract and will not be willing to negotiate terms. This is called an “adhesion contract” and the other party will not be able to obtain the desired product or service unless it acquiesces to the form contract. This could be the case of the Authorized Dealer Agreement. Adhesion contracts may not be enforceable to the extent they contain unreasonable terms.
+      - When dealing with government entities or political subdivisions such as cities and towns, be aware of legal requirements applicable to those entities, including public bidding requirements, fair wage laws, open door laws and others.
+    - Prayer for Relief(The prayer for relief is where the petitioner clearly outlines the relief sought from the court0
+      - If the petition relates to a service agreement violation, the petitioner might ask for the court to order the respondent to fulfill the terms of the contract, pay damages, or issue an injunction. It is important to ensure that the relief requested is reasonable and in line with the facts presented.
+    - Signature9Signature of the parties0
+
+    If lawyer ask for modifications then provide accordingly.
+    If something is no neccessary for a contract don't include that things.
+  expected_output: >
+    A contract draft that contains:
+    - Title
+    - Date
+    - practices
+    - General Provisions
+    - Notarization
+    - Number of Original contracts
+    - Governing laws, Jurisdiction, Arbitration
+    - Negotiation Procedure
+    - Prayer for Relief
+  agent: draft_agent
