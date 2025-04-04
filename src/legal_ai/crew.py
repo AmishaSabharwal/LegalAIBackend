@@ -2,7 +2,6 @@ from crewai import Agent, Crew, Process, Task, LLM
 from crewai.project import CrewBase, agent, crew, task
 from dotenv import load_dotenv
 import os 
-from src.legal_ai.tools.custom_tool import PetitionDraftingTool, PetitionModificationTool
 
 load_dotenv()
 
@@ -29,7 +28,6 @@ class LegalAi():
             config=self.agents_config['Petition_draft_agent'],
             verbose=True,
             memory=True,
-            tools=[PetitionDraftingTool()]
         )
 
     @task
@@ -38,28 +36,12 @@ class LegalAi():
             config=self.tasks_config['Petition_draft_task'],
         )
 
-    @agent
-    def Petition_modifier_agent(self) -> Agent:
-        return Agent(
-            config=self.agents_config['Petition_modifier_agent'],
-            verbose=True,
-            memory=True,
-            tools=[PetitionModificationTool()]
-        )
-
-    @task
-    def Petition_modifier_task(self) -> Task:
-        return Task(
-            config=self.tasks_config['Petition_modifier_task'],
-        )
-        
     @crew
     def crew(self) -> Crew:
         """Creates the LegalAi crew"""
         return Crew(
             agents=self.agents,
             tasks=self.tasks,
-            process=Process.hierarchical,
-            manager_llm=llm,
+            process=Process.sequential,
             verbose=True,       
         )

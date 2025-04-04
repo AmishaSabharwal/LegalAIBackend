@@ -5,7 +5,7 @@ Petition_draft_task:
     The contract should contain:
     - Title(Title of the petition, court’s name, case number0
     - Date(Contract signing date)
-    - Parties(The names of the parties; for instance the petitioner who brings the petition and the respondent who the petition is filed against)
+    - Parties(Names of the parties; for instance the petitioner who brings the petition and the respondent who the petition is filed against)
     - General Provisions: 
       a. Governing Law & Jurisdiction (Which state’s law applies)
       b. Entire Agreement Clause (Prevents reliance on previous discussions)
@@ -29,6 +29,7 @@ Petition_draft_task:
       - If the petition relates to a service agreement violation, the petitioner might ask for the court to order the respondent to fulfill the terms of the contract, pay damages, or issue an injunction. It is important to ensure that the relief requested is reasonable and in line with the facts presented.
     - Signature(Signature of the parties)
     If something is not neccessary for a contract don't include that things.
+    {query}
   expected_output: >
     A contract draft that contains:
     - Title
@@ -42,20 +43,3 @@ Petition_draft_task:
     - Prayer for Relief
   agent: Petition_draft_agent
 
-Petition_modifier_task:
-  description: >
-    Your task is to carefully review the petition uploaded by the lawyer for modification. 
-    Your primary responsibility is to ensure that the petition is legally sound, well-structured, and aligned with the lawyer's specific requests for modifications. 
-    - If the lawyer has requested changes, incorporate them precisely while maintaining the integrity of the legal argument and contract structure.
-    - Pay close attention to accuracy in names, legal clauses, formatting, and legal language to ensure professionalism and compliance with jurisdictional requirements.
-    - If the lawyer has not requested specific modifications but general improvements are needed, refine the petition to enhance clarity, consistency, and readability.
-    - Ensure that legal provisions remain coherent, enforceable, and free of ambiguity.
-    - Cross-check all references to statutes, case law, or contractual clauses to prevent inconsistencies or misinterpretations.
-    - Preserve the document’s original intent while improving its logical flow, precision, and legal robustness.
-  expected_output: >
-    A well-structured, legally precise, and professionally formatted petition that:
-    - Incorporates all requested modifications seamlessly.
-    - Maintains legal clarity, consistency, and compliance.
-    - Uses professional legal language and formatting.
-    - Enhances the overall readability and persuasiveness of the document.
-  agent: Petition_modifier_agent
