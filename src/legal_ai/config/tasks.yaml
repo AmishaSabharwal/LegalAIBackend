@@ -1,8 +1,7 @@
-draft_task:
+Petition_draft_task:
   description: >
-    Your task is draft a petition contract based on lawyer prompts only.
-    {query}
-    The petition must clearly identify the terms of the agreement, the breach, and the specific remedy sought
+    Your task is to draft a petition contract based on lawyer prompts only.
+    The petition must clearly identify the terms of the agreement, the breach, and the specific remedy sought.
     The contract should contain:
     - Title(Title of the petition, court’s name, case number0
     - Date(Contract signing date)
@@ -28,10 +27,8 @@ draft_task:
       - When dealing with government entities or political subdivisions such as cities and towns, be aware of legal requirements applicable to those entities, including public bidding requirements, fair wage laws, open door laws and others.
     - Prayer for Relief(The prayer for relief is where the petitioner clearly outlines the relief sought from the court0
       - If the petition relates to a service agreement violation, the petitioner might ask for the court to order the respondent to fulfill the terms of the contract, pay damages, or issue an injunction. It is important to ensure that the relief requested is reasonable and in line with the facts presented.
-    - Signature9Signature of the parties0
-
-    If lawyer ask for modifications then provide accordingly.
-    If something is no neccessary for a contract don't include that things.
+    - Signature(Signature of the parties)
+    If something is not neccessary for a contract don't include that things.
   expected_output: >
     A contract draft that contains:
     - Title
@@ -43,4 +40,22 @@ draft_task:
     - Governing laws, Jurisdiction, Arbitration
     - Negotiation Procedure
     - Prayer for Relief
-  agent: draft_agent
+  agent: Petition_draft_agent
+
+Petition_modifier_task:
+  description: >
+    Your task is to carefully review the petition uploaded by the lawyer for modification. 
+    Your primary responsibility is to ensure that the petition is legally sound, well-structured, and aligned with the lawyer's specific requests for modifications. 
+    - If the lawyer has requested changes, incorporate them precisely while maintaining the integrity of the legal argument and contract structure.
+    - Pay close attention to accuracy in names, legal clauses, formatting, and legal language to ensure professionalism and compliance with jurisdictional requirements.
+    - If the lawyer has not requested specific modifications but general improvements are needed, refine the petition to enhance clarity, consistency, and readability.
+    - Ensure that legal provisions remain coherent, enforceable, and free of ambiguity.
+    - Cross-check all references to statutes, case law, or contractual clauses to prevent inconsistencies or misinterpretations.
+    - Preserve the document’s original intent while improving its logical flow, precision, and legal robustness.
+  expected_output: >
+    A well-structured, legally precise, and professionally formatted petition that:
+    - Incorporates all requested modifications seamlessly.
+    - Maintains legal clarity, consistency, and compliance.
+    - Uses professional legal language and formatting.
+    - Enhances the overall readability and persuasiveness of the document.
+  agent: Petition_modifier_agent
