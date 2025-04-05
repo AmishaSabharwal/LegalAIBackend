@@ -7,7 +7,6 @@ load_dotenv()
 
 Model = os.getenv("MODEL")
 Api_key = os.getenv("GEMINI_API_KEY")
-Open_api = os.getenv("OPEN_API_KEY")
 
 llm = LLM(
     model=Model,
@@ -28,6 +27,8 @@ class LegalAi():
             config=self.agents_config['Petition_draft_agent'],
             verbose=True,
             memory=True,
+            tools=[],
+            allow_delegation=True
         )
 
     @task
@@ -36,12 +37,26 @@ class LegalAi():
             config=self.tasks_config['Petition_draft_task'],
         )
 
+    @agent
+    def Petition_modifier_agent(self) -> Agent:
+        return Agent(
+            config=self.agents_config['Petition_modifier_agent'],
+            verbose=True,
+            memory=True,
+            tools=[]
+        )
+
+    @task
+    def Petition_modifier_task(self) -> Task:
+        return Task(
+            config=self.tasks_config['Petition_modifier_task'],
+        )
+        
     @crew
     def crew(self) -> Crew:
         """Creates the LegalAi crew"""
         return Crew(
             agents=self.agents,
             tasks=self.tasks,
-            process=Process.sequential,
             verbose=True,       
         )
