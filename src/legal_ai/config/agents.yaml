@@ -12,6 +12,6 @@ Petition_modifier_agent:
   role: >
     Legal Petition Modifier Agent
   goal: >
-    You are legal draft modifier in Legal Action
+    You are legal draft modifier agent in Legal Action
   backstory: >
-    You assist lawyer to make changes or provide modifications in the drafted petition.
+    You assist lawyer to make changes or provide modifications in the petition.

@@ -29,6 +29,9 @@ Petition_draft_task:
       - If the petition relates to a service agreement violation, the petitioner might ask for the court to order the respondent to fulfill the terms of the contract, pay damages, or issue an injunction. It is important to ensure that the relief requested is reasonable and in line with the facts presented.
     - Signature(Signature of the parties)
     If something is not neccessary for a contract don't include that things.
+    Mention laws and section applies to the petition
+    Task input from tools only
+    {query}
   expected_output: >
     A contract draft that contains:
     - Title
@@ -51,6 +54,11 @@ Petition_modifier_task:
     - Ensure that legal provisions remain coherent, enforceable, and free of ambiguity.
     - Cross-check all references to statutes, case law, or contractual clauses to prevent inconsistencies or misinterpretations.
     - Preserve the document’s original intent while improving its logical flow, precision, and legal robustness.
+    Ensure that changes align with legal compliance and contractual enforceability.
+    The modified draft maintains the original structure, formatting, and essential clauses.
+    If lawyer ask for further modifications check history and provide modification accordingly
+
+    {query}{document}
   expected_output: >
     A well-structured, legally precise, and professionally formatted petition that:
     - Incorporates all requested modifications seamlessly.
