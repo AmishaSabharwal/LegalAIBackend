@@ -1,54 +1,43 @@
-Petition_draft_task:
+
+drafting_task:
   description: >
-    Your task is to draft a petition contract based on lawyer prompts only.
-    The petition must clearly identify the terms of the agreement, the breach, and the specific remedy sought.
-    The contract should contain:
-    - Title(Title of the petition, court’s name, case number0
-    - Date(Contract signing date)
-    - Parties(Names of the parties; for instance the petitioner who brings the petition and the respondent who the petition is filed against)
-    - General Provisions: 
-      a. Governing Law & Jurisdiction (Which state’s law applies)
-      b. Entire Agreement Clause (Prevents reliance on previous discussions)
-      c. Notices (Where official communications should be sent)
-      d. Costs of Legal Action (Who pays in case of disputes)
-      e. Arbitration Clause (Mandatory arbitration vs. litigation)
-      f. Force Majeure Clause (Exemptions for unforeseeable events)
-    - Notarization(Include if the document requires official registration or legal validity. It is s notary’s stamp)
-    - Number of Original Contracts(Number signed contract)
-    - Governing Law, Jurisdiction and Arbitration
-    - Notarization Procedure:
-      - Parties goals and expectation from contract.
-      - Parties position in respect to strength, weaknesses and bargaining. This section requires a careful explanation of the legal principles and laws that support the petitioner's claim. This includes references to statutes, case law, or constitutional provisions relevant to the case.
-      - Include critical and non-critical terms to determine area of compromise.
-      - Include resolution of the disagreement.
-      - Until a final definitive agreement is reached, all draft agreements, term sheets or letters of intent should clearly state the following:
-        "This document is not intended to create or constitute any legally binding obligation between the parties hereto, and no party shall have any liability or obligation to another with respect to this document until a fully integrated definitive agreement is prepared, authorized, executed, and delivered by all parties.""
-      - In some circumstances, a party will insist on using its form contract and will not be willing to negotiate terms. This is called an “adhesion contract” and the other party will not be able to obtain the desired product or service unless it acquiesces to the form contract. This could be the case of the Authorized Dealer Agreement. Adhesion contracts may not be enforceable to the extent they contain unreasonable terms.
-      - When dealing with government entities or political subdivisions such as cities and towns, be aware of legal requirements applicable to those entities, including public bidding requirements, fair wage laws, open door laws and others.
-    - Prayer for Relief(The prayer for relief is where the petitioner clearly outlines the relief sought from the court0
-      - If the petition relates to a service agreement violation, the petitioner might ask for the court to order the respondent to fulfill the terms of the contract, pay damages, or issue an injunction. It is important to ensure that the relief requested is reasonable and in line with the facts presented.
-    - Signature(Signature of the parties)
-    If something is not neccessary for a contract don't include that things.
-    Mention laws and section applies to the petition
-    Task input from tools only
+    You are a legal assistant AI tasked with drafting formal legal documents
+    (either a **Contract** or a **Petition**) as per the request provided in the prompt.
+
+    Carefully analyze whether the user is asking for a contract agreement or a court petition.
+
+    If it is a **Contract**, use the following structure:
+      - Title: "CONTRACT AGREEMENT"
+      - Parties: Clearly identify the parties involved, their addresses, and roles.
+      - Purpose: Brief description of what the agreement covers.
+      - Term, Scope of Work/Services, Compensation, Confidentiality, IP, Termination, etc.
+      - Governing Law: U.S. State laws applicable, mention applicable U.S. laws or state statutes wherever relevant.
+      - Signature section for both parties.
+      - Use formal contractual tone and make sure it is legally coherent and enforceable.
+
+    If it is a **Petition**, use the following structure:
+      - Title: "PETITION FOR [TYPE OF RELIEF]"
+      - Addressed to: “TO THE HONORABLE JUDGE OF SAID COURT:”
+      - Parties: Petitioner and Respondent details
+      - Jurisdiction & Venue
+      - Statement of Facts in numbered paragraphs
+      - Legal Grounds / Causes of Action (with headings: "Count I", "Count II", etc.)
+      - Prayer for Relief (detailed specific requests)
+      - Signature Block: Attorney or Pro Se
+      - Include Verification and Notary (if required)
+      - Mention applicable U.S. laws or state statutes wherever relevant.
+    Respond in a structured format.
     {query}
   expected_output: >
-    A contract draft that contains:
-    - Title
-    - Date
-    - practices
-    - General Provisions
-    - Notarization
-    - Number of Original contracts
-    - Governing laws, Jurisdiction, Arbitration
-    - Negotiation Procedure
-    - Prayer for Relief
-  agent: Petition_draft_agent
+      - Draft professional, legally sound documents.
+      - Include relevant laws, clauses, and sections based on U.S. legal system.
+      - Ensure the document aligns with the user's purpose (business, service agreement, legal relief, etc.)
+  agent: drafting_agent
 
-Petition_modifier_task:
+modifier_task:
   description: >
-    Your task is to carefully review the petition uploaded by the lawyer for modification. 
-    Your primary responsibility is to ensure that the petition is legally sound, well-structured, and aligned with the lawyer's specific requests for modifications. 
+    Your task is to carefully review the petition or contract uploaded by the lawyer for modification. 
+    Your primary responsibility is to ensure that the petition or contract is legally sound, well-structured, and aligned with the lawyer's specific requests for modifications. 
     - If the lawyer has requested changes, incorporate them precisely while maintaining the integrity of the legal argument and contract structure.
     - If the lawyer has not requested specific modifications but general improvements are needed, refine the petition to enhance clarity, consistency, and readability.
     - Ensure that legal provisions remain coherent, enforceable, and free of ambiguity.
@@ -60,9 +49,9 @@ Petition_modifier_task:
 
     {query}{document}
   expected_output: >
-    A well-structured, legally precise, and professionally formatted petition that:
+    A well-structured, legally precise, and professionally formatted petition or contract that:
     - Incorporates all requested modifications seamlessly.
     - Maintains legal clarity, consistency, and compliance.
     - Uses professional legal language and formatting.
     - Enhances the overall readability and persuasiveness of the document.
-  agent: Petition_modifier_agent
+  agent: modifier_agent

@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, Response
 from src.legal_ai.crew import LegalAi
 from docx import Document
 from flask_cors import CORS
@@ -7,6 +7,8 @@ import os
 from pypdf import PdfReader
 import pathlib
 import tempfile
+import markdown
+import re
 
 app = Flask(__name__)
 
@@ -66,15 +68,18 @@ def run():
     Main API endpoint that receives a prompt and optionally a document.
     Passes data to Legal AI Crew for processing and returns the response.
     """
-    # data = request.get_json()
-    # file_path = data.get('document')  # Path to document (optional)
-    # prompt = data.get('query')        # User query
-    
-    file_path = request.files.get('document')  # Path to document (optional)
-    prompt = request.form.get('query')  
 
+    if request.content_type.startswith('multipart/form-data'):
+        file_path = request.files.get('document')
+        prompt = request.form.get('query')
+        
+    elif request.content_type == 'application/json':  
+        file_path = request.files.get('document')          
+        data = json.loads(request.data.decode('utf-8'))
+        prompt = data.get('query')
+        
     file_content = None
-
+    
     if file_path:
         # Save to a temporary file
         with tempfile.NamedTemporaryFile(delete=False, suffix=pathlib.Path(file_path.filename).suffix) as tmp_file:
@@ -84,8 +89,6 @@ def run():
         file_content = extract_text(file_path)
     # Extract text from the provided document if available
     file_content = extract_text(file_path) if file_path else None
-    if not prompt and not file_content:
-        return jsonify({"Hello! How can I help you?"}), 400
 
     input_data = {
         'query': prompt if prompt else None,
@@ -93,13 +96,15 @@ def run():
     }
         
     answer = LegalAi().crew().kickoff(inputs=input_data)
- 
-    response = answer.raw  # Get raw response text
 
-    # Save the interaction to history
-    history(input_data, response)
+    raw_response = answer.raw.strip()
+    
+    cleaned = re.sub(r"^```(?:[a-zA-Z]*)?|```$", "", raw_response.strip())
+    history(input_data, cleaned)
+    # Convert markdown → proper HTML
+    html_body = markdown.markdown(cleaned)
 
-    return response  # Send back the AI's response
+    return Response(html_body, mimetype="text/html")
 
 if __name__ == "__main__":
     app.run(host="192.168.2.17", debug=True)
