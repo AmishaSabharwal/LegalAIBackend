@@ -27,6 +27,7 @@ drafting_task:
       - Include Verification and Notary (if required)
       - Mention applicable U.S. laws or state statutes wherever relevant.
     Respond in a structured format.
+    
     {query}
   expected_output: >
       - Draft professional, legally sound documents.

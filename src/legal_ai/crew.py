@@ -1,6 +1,6 @@
 from crewai import Agent, Crew, Task, LLM, Process
 from crewai.project import CrewBase, agent, crew, task
-from crewai_tools import DirectorySearchTool, DirectoryReadTool
+from crewai_tools import DirectoryReadTool
 from dotenv import load_dotenv
 import os 
 
@@ -8,7 +8,6 @@ load_dotenv()
 
 Model = os.getenv("MODEL")
 Api_key = os.getenv("GEMINI_API_KEY")
-Embedding_model= os.getenv("EMBEDDING_MODEL")
 
 llm = LLM(
     model=Model,
@@ -16,47 +15,7 @@ llm = LLM(
     temperature=0.7,
     max_tokens=1000,
     timeout=120,
-    embedding_model=Embedding_model
 )
-
-# laws = DirectorySearchTool(
-#     directory='./knowledge/pdf_uscAll@119-4',  # path to folder containing PDFs
-#     config=dict(
-#         llm=dict(
-#             provider="google",
-#             config=dict(
-#                 model="gemini",
-#                 api_key=Api_key
-#             ),
-#         ),
-#         embedder=dict(
-#             provider="google",
-#             config=dict(
-#                 model=Embedding_model,
-#                 task_type="retrieval_document"            
-#             ),
-#         ),
-#     )
-# )
-# laws = DirectorySearchTool(
-#     directory='/home/amisha/Projects/legal_ai/legal_ai/knowledge/pdf_uscAll@119-4',
-#     config={
-#         "llm": {
-#             "provider": "google",
-#             "config": {
-#                 "model": Model,
-#                 "api_key": Api_key
-#             },
-#         },
-#         "embedder": {
-#             "provider": "google",
-#             "config": {
-#                 "model": Embedding_model,  # Same here since it's used for embeddings
-#                 "task_type": "retrieval_document",
-#             },
-#         },
-#     }
-# )
 
 laws = DirectoryReadTool(directory='/path/to/your/directory')
 

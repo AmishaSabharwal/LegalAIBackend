@@ -7,7 +7,6 @@ import os
 from pypdf import PdfReader
 import pathlib
 import tempfile
-import markdown
 import re
 
 app = Flask(__name__)
@@ -69,17 +68,20 @@ def run():
     Passes data to Legal AI Crew for processing and returns the response.
     """
 
+    # Check if the request contains form data with files (like from an HTML form upload)
     if request.content_type.startswith('multipart/form-data'):
         file_path = request.files.get('document')
         prompt = request.form.get('query')
-        
+
+    # Check if the request is of type application/json (e.g., from a frontend app)
     elif request.content_type == 'application/json':  
-        file_path = request.files.get('document')          
-        data = json.loads(request.data.decode('utf-8'))
+        file_path = request.files.get('document')  # This may often be None for pure JSON requests
+        data = json.loads(request.data.decode('utf-8')) # Load and decode the raw JSON payload
         prompt = data.get('query')
-        
+
+    # Initialize a variable to hold the extracted text from the file
     file_content = None
-    
+
     if file_path:
         # Save to a temporary file
         with tempfile.NamedTemporaryFile(delete=False, suffix=pathlib.Path(file_path.filename).suffix) as tmp_file:
@@ -87,22 +89,23 @@ def run():
             file_path = tmp_file.name
 
         file_content = extract_text(file_path)
+        
     # Extract text from the provided document if available
     file_content = extract_text(file_path) if file_path else None
 
+    # creating input dict for crew
     input_data = {
-        'query': prompt if prompt else None,
+        'query': prompt if prompt else None, 
         'document': file_content if file_content else None
     }
         
+    # starting the crew to work on its assigned tasks
     answer = LegalAi().crew().kickoff(inputs=input_data)
-
-    raw_response = answer.raw.strip()
     
-    # # Just return the raw response, no markdown or HTML formatting
-    # raw_response = answer.raw.strip()
+    # Just return the raw response
+    raw_response = answer.raw.strip()
 
-    # Optional: Remove markdown code fences (```), but keep everything else
+    # Remove markdown code fences
     cleaned = re.sub(r"^```(?:[a-zA-Z]*)?|```$", "", raw_response.strip())
 
     # Save to history
