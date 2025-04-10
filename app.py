@@ -99,12 +99,17 @@ def run():
 
     raw_response = answer.raw.strip()
     
-    cleaned = re.sub(r"^```(?:[a-zA-Z]*)?|```$", "", raw_response.strip())
-    history(input_data, cleaned)
-    # Convert markdown → proper HTML
-    html_body = markdown.markdown(cleaned)
+    # # Just return the raw response, no markdown or HTML formatting
+    # raw_response = answer.raw.strip()
 
-    return Response(html_body, mimetype="text/html")
+    # Optional: Remove markdown code fences (```), but keep everything else
+    cleaned = re.sub(r"^```(?:[a-zA-Z]*)?|```$", "", raw_response.strip())
+
+    # Save to history
+    history(input_data, cleaned)
+
+    # Return plain text response
+    return Response(cleaned, mimetype="text/plain")
 
 if __name__ == "__main__":
     app.run(host="192.168.2.17", debug=True)
