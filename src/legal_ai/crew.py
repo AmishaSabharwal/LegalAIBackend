@@ -1,4 +1,4 @@
-from crewai import Agent, Crew, Task, LLM, Process
+from crewai import Agent, Crew, Task, LLM
 from crewai.project import CrewBase, agent, crew, task
 from crewai_tools import DirectoryReadTool
 from dotenv import load_dotenv
@@ -30,7 +30,7 @@ class LegalAi():
     @agent
     def drafting_agent(self) -> Agent:
         """
-        Defines the agent responsible for drafting legal petitions.
+        Defines the agent responsible for drafting legal petitions and contracts.
 
         Returns:
             Agent: An initialized drafting agent.
@@ -43,22 +43,10 @@ class LegalAi():
             tools=[laws]
         )
 
-    @task
-    def drafting_task(self) -> Task:
-        """
-        Defines the drafting task for petitions.
-
-        Returns:
-            Task: A drafting task object.
-        """
-        return Task(
-            config=self.tasks_config['drafting_task'],  # Loads task config from YAML
-        )
-
     @agent
     def modifier_agent(self) -> Agent:
         """
-        Defines the agent responsible for modifying existing petitions.
+        Defines the agent responsible for modifying existing petitions and contracts.
 
         Returns:
             Agent: An initialized modifying agent.
@@ -70,11 +58,23 @@ class LegalAi():
             llm=llm,
             tools=[laws]
         )
+        
+    @task
+    def drafting_task(self) -> Task:
+        """
+        Defines the drafting task for petitions and contracts.
 
+        Returns:
+            Task: A drafting task object.
+        """
+        return Task(
+            config=self.tasks_config['drafting_task'],  # Loads task config from YAML
+        )
+        
     @task
     def modifier_task(self) -> Task:
         """
-        Defines the modification task for reviewing and editing petitions.
+        Defines the modification task for reviewing and editing petitions and contracts.
 
         Returns:
             Task: A modifier task object.

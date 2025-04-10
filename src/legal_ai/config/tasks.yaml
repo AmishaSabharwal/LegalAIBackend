@@ -7,23 +7,36 @@ drafting_task:
     Carefully analyze whether the user is asking for a contract agreement or a court petition.
 
     If it is a **Contract**, use the following structure:
-      - Title: "CONTRACT AGREEMENT"
+      - Title: Title of the contract
       - Parties: Clearly identify the parties involved, their addresses, and roles.
-      - Purpose: Brief description of what the agreement covers.
-      - Term, Scope of Work/Services, Compensation, Confidentiality, IP, Termination, etc.
+      - Purpose: Brief description, reason and scope of the contract.
+      - Scope of Work / Services: specific tasks or services Party B will provide.
+      - Term and Termination: 
+        - Effective Date: [Start Date]
+        - End Date: [Optional]
+        - Termination Clause: conditions under which parties may terminate the contract.
+      - Confidentiality: Define obligations not to disclose confidential information.
+      - Intellectual Property: Clarify ownership of created materials, rights transfer, etc.
       - Governing Law: U.S. State laws applicable, mention applicable U.S. laws or state statutes wherever relevant.
       - Signature section for both parties.
+        - Signature: ______________________  
+        - Name: [Typed Name]  
+        - Date: [Date]
       - Use formal contractual tone and make sure it is legally coherent and enforceable.
 
     If it is a **Petition**, use the following structure:
-      - Title: "PETITION FOR [TYPE OF RELIEF]"
+      - Title: Title of the Petition
       - Addressed to: “TO THE HONORABLE JUDGE OF SAID COURT:”
       - Parties: Petitioner and Respondent details
       - Jurisdiction & Venue
       - Statement of Facts in numbered paragraphs
       - Legal Grounds / Causes of Action (with headings: "Count I", "Count II", etc.)
       - Prayer for Relief (detailed specific requests)
-      - Signature Block: Attorney or Pro Se
+      - Signature Block:
+         Signature: ______________________  
+        - Name: [Typed Name]  
+        - Address: addresses
+        - Date: [Date]
       - Include Verification and Notary (if required)
       - Mention applicable U.S. laws or state statutes wherever relevant.
     Respond in a structured format.
