@@ -3,11 +3,11 @@ from src.legal_ai.crew import LegalAi
 from docx import Document
 from flask_cors import CORS
 import json
-import os 
 from pypdf import PdfReader
 import pathlib
 import tempfile
 import re
+import os
 
 app = Flask(__name__)
 
@@ -67,31 +67,21 @@ def run():
     Main API endpoint that receives a prompt and optionally a document.
     Passes data to Legal AI Crew for processing and returns the response.
     """
-
-    # Check if the request contains form data with files (like from an HTML form upload)
     if request.content_type.startswith('multipart/form-data'):
-        file_path = request.files.get('document')
+        files = request.files.getlist('document')
         prompt = request.form.get('query')
 
     # Check if the request is of type application/json (e.g., from a frontend app)
     elif request.content_type == 'application/json':  
-        file_path = request.files.get('document')  # This may often be None for pure JSON requests
+        files = request.files.getlist('document')  # This may often be None for pure JSON requests
         data = json.loads(request.data.decode('utf-8')) # Load and decode the raw JSON payload
         prompt = data.get('query')
 
-    # Initialize a variable to hold the extracted text from the file
-    file_content = None
-
-    if file_path:
-        # Save to a temporary file
-        with tempfile.NamedTemporaryFile(delete=False, suffix=pathlib.Path(file_path.filename).suffix) as tmp_file:
-            file_path.save(tmp_file.name)
-            file_path = tmp_file.name
-
-        file_content = extract_text(file_path)
-        
-    # Extract text from the provided document if available
-    file_content = extract_text(file_path) if file_path else None
+    file_content = ""
+    for file in files:
+        with tempfile.NamedTemporaryFile(delete=False, suffix=pathlib.Path(file.filename).suffix) as tmp_file:
+            file.save(tmp_file.name)
+            file_content += extract_text(tmp_file.name) + "\n"
 
     # creating input dict for crew
     input_data = {
@@ -108,11 +98,11 @@ def run():
     # Remove markdown code fences
     cleaned = re.sub(r"^```(?:[a-zA-Z]*)?|```$", "", raw_response.strip())
 
-    # Save to history
+    # Saving input and response to history
     history(input_data, cleaned)
 
     # Return plain text response
     return Response(cleaned, mimetype="text/plain")
 
 if __name__ == "__main__":
-    app.run(host="192.168.2.17", debug=True)
+    app.run(port=8000, debug=True)
