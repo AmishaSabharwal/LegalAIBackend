@@ -1,8 +1,12 @@
-from crewai import Agent, Crew, Task, LLM
+from crewai import Agent, Crew, Task, LLM, Process
 from crewai.project import CrewBase, agent, crew, task
 from crewai_tools import DirectorySearchTool, FileReadTool
 from dotenv import load_dotenv
 import os 
+import time
+from pathlib import Path
+import json
+time.sleep(60)
 
 load_dotenv()
 
@@ -15,10 +19,20 @@ llm = LLM(
     api_key=Api_key,
     temperature=0.7,
     max_tokens=2000,
-    timeout=100,
 )
 
-history_tool = FileReadTool(file_path='./testing.json')
+# file_path = 'history.json'
+# try:
+#     content = Path(file_path).read_text().strip()
+#     if content:
+#         data = json.loads(content)
+#     else:
+#         data = []
+# except (json.JSONDecodeError, FileNotFoundError) as e:
+#     print(f"Error reading history: {e}")
+#     data = []
+# history = data[-3:]
+history = FileReadTool(file_path='./history.json')
 
 laws = DirectorySearchTool(
     directory='/home/amisha/Projects/legal_ai/legal_ai/knowledge/pdf_uscAll@119-4',  # path to folder containing PDFs
@@ -47,7 +61,34 @@ class LegalAi():
     # Paths to YAML config files for agents and tasks
     agents_config = 'config/agents.yaml'
     tasks_config = 'config/tasks.yaml'
+    
+    @agent
+    def manager_agent(self) -> Agent:
+        """
+        Defines the agent responsible for drafting legal petitions and contracts.
 
+        Returns:
+            Agent: An initialized drafting agent.
+        """
+        return Agent(
+            config=self.agents_config['manager_agent'],  # Loads agent config from YAML
+            verbose=True
+        )
+
+    @agent
+    def Summary_agent(self) -> Agent:
+        """
+        Defines the agent responsible for modifying existing petitions.
+
+        Returns:
+            Agent: An initialized summary generator agent.
+        """
+        return Agent(
+            config=self.agents_config['Summary_agent'],  # Loads agent config from YAML
+            verbose=True,
+            tools=[laws, history],
+        )
+            
     @agent
     def drafting_agent(self) -> Agent:
         """
@@ -58,8 +99,9 @@ class LegalAi():
         """
         return Agent(
             config=self.agents_config['drafting_agent'],  # Loads agent config from YAML
-            memory=True,  # Enables conversation memory
-            tools=[laws, history_tool]
+            tools=[laws],
+            verbose=True
+
         )
 
     @agent
@@ -72,8 +114,9 @@ class LegalAi():
         """
         return Agent(
             config=self.agents_config['modifier_agent'],  # Loads agent config from YAML
-            memory=True,
-            tools=[laws, history_tool]
+            tools=[history],
+            verbose=True
+
         )
         
     @agent
@@ -86,10 +129,34 @@ class LegalAi():
         """
         return Agent(
             config=self.agents_config['findings_agent'],  # Loads agent config from YAML
-            memory=True,
-            tools=[history_tool],
+            tools=[history],
+            verbose=True
         )
+        
+    @task
+    def manager_task(self) -> Task:
+        """
+        Defines the drafting task for petitions and contracts.
 
+        Returns:
+            Task: A drafting task object.
+        """
+        return Task(
+            config=self.tasks_config['manager_task'],  # Loads task config from YAML
+        )
+        
+    @task
+    def Summary_task(self) -> Task:
+        """
+        Defines the summary generator task for petitions.
+
+        Returns:
+            Task: A summary generator task object.
+        """
+        return Task(
+            config=self.tasks_config['Summary_task'],  # Loads task config from YAML
+        )  
+              
     @task
     def drafting_task(self) -> Task:
         """
@@ -125,7 +192,7 @@ class LegalAi():
         return Task(
             config=self.tasks_config['findings_task'],  # Loads task config from YAML
         )
-         
+             
     @crew
     def crew(self) -> Crew:
         """
@@ -135,8 +202,14 @@ class LegalAi():
             Crew: A CrewAI Crew instance ready to run tasks.
         """
         return Crew(
-            agents=self.agents,  # Collects all @agent methods
+            agents=[  # exclude manager_agent
+                self.Summary_agent(),
+                self.drafting_agent(),
+                self.modifier_agent(),
+                self.findings_agent(),
+            ],  # Collects all @agent methods
             tasks=self.tasks,    # Collects all @task methods
             verbose=True,        # Enables verbose output during execution
-            llm=llm
+            llm=llm,
+            manager_agent=self.manager_agent()
         )

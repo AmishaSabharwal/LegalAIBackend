@@ -1,12 +1,53 @@
+manager_task:
+  description: >
+    As the Legal Manager Agent, your task is to:
+    - Understand the lawyer's intent from the prompt.
+    - Decide whether the request is for: 
+        a) summary of a document.
+        b) Drafting a new contract or petition,
+        c) Modifying an existing draft based on new instructions,
+        d) Compare findings across multiple documents. 
+    - Route the query to the correct agent accordingly.
+    Ensure only that agent will perform whom you assign the task.
+    Input query:
+    {query}{document}
+  expected_output: >
+    - Agent selected for task execution.
+    - Cleanly routed query passed to the correct agent.
+  agent: manager_agent
+
+Summary_task:
+  description: >
+    Your task is to carefully read the shared contract or petition and produce a concise, bullet-point summary.
+    If it is a contract, summary contains:
+      - Parties involved
+      - Purpose of the agreement
+      - Key obligations or services
+      - Financial or legal obligations
+      - Term & Termination
+      - Risky or missing clauses
+      - Governing law
+    If it is a petition, summary contains:
+      - Case title and court
+      - Jurisdiction
+      - Parties (Petitioner and Respondent/Defendant)
+      - Legal issue or violation
+      - Key facts and timeline
+      - Legal counts or claims
+      - Relief/prayer requested
+    {document}{query}
+  expected_output: >
+    A concise and structured summary of the contract or petition with highlights of key content, legal exposure, or omissions.
+  agent: Summary_agent
+
 drafting_task:
   description: >
-    You are a legal assistant AI tasked with drafting formal legal documents
-    (either a contractcontractContractcontractcontract or a contractcontractPetitioncontractcontract) as per the request provided in the prompt.
-    If it is a contractcontractContractcontractcontract, use the following structure:
-      - Title of the contract
+    You are a legal assistant AI tasked with drafting formal legal documents (either a contract or a petition) as per the request provided in the prompt.
+    If it is a contract, use the following structure:
+      - Title of the contract(must be in center)
       - Parties: Clearly identify the parties involved, their addresses, and roles.
       - Purpose: Brief description, reason and scope of the contract.
-      - Scope of Work / Services: specific tasks or services Party B will provide.
+      - Scope of Work/Services: specific tasks or services Party B will provide.
       - Term and Termination: 
         - Effective Date: 
         - End Date: [Optional]
@@ -14,20 +55,20 @@ drafting_task:
       - Confidentiality: Define obligations not to disclose confidential information.
       - Intellectual Property: Clarify ownership of created materials, rights transfer, etc.
       - Governing Law: U.S. State laws applicable, mention applicable U.S. laws or state statutes wherever relevant.
-      - Signature section for both parties.
+      - Signature section for both parties.(1 on left side and other on right side)
         - Signature:
         - Name: 
         - Date: 
       - Use formal contractual tone and make sure it is legally coherent and enforceable.
 
-    If it is a contractcontractPetitioncontractcontract, use the following structure:
-      - Title of the Petition
+    If it is a Petition, use the following structure:
+      - Title of the Petition(must be in center)
       - Addressed to: “TO THE HONORABLE JUDGE OF SAID COURT:”
       - Parties: Petitioner and Respondent details
       - Jurisdiction & Venue
       - Statement of Facts in numbered paragraphs
-      - Legal Grounds / Causes of Action (with headings: "Count I", "Count II", etc.)
-      - Prayer for Relief (detailed specific requests)
+      - Legal Grounds/Causes of Action
+      - Prayer for Relief
       - Signature Block:
          Signature: 
         - Name: 
@@ -36,49 +77,56 @@ drafting_task:
       - Include Verification and Notary (if required)
       - Mention applicable U.S. laws or state statutes wherever relevant.
     Respond in a structured format.  
-    If further refinement is needed check memoory of your last few responses do accordingly.  
+    The agent didn't responsed otherthan drafting.
+    Input query:
     {query}
   expected_output: >
-      - Draft professional, legally sound documents.
-      - Include relevant laws, clauses, and sections based on U.S. legal system.
-      - Ensure the document aligns with the user's purpose (business, service agreement, legal relief, etc.)
+        Draft professional, legally sound documents.
+        Include relevant laws, clauses, and sections based on U.S. legal system.
+        Ensure the document aligns with the user's purpose (business, service agreement, legal relief, etc.)
   agent: drafting_agent
 
 modifier_task:
   description: >
     Your task is to carefully review the petition or contract uploaded by the lawyer or drafted by the drafting_agent. 
-    Your primary responsibility is to ensure that the petition or contract is legally sound, well-structured, and aligned with the lawyer's specific requests for modifications. 
+    Change, modify or add any specific requests in draft generated by the drafting_agent or document uploaded by the lawyer's . 
     - If the lawyer has requested changes, incorporate them precisely while maintaining the integrity of the legal argument and contract structure.
     - If the lawyer has not requested specific modifications but general improvements are needed, refine the petition to enhance clarity, consistency, and readability.
     - Ensure that legal provisions remain coherent, enforceable, and free of ambiguity.
     - Cross-check all references to statutes, case law, or contractual clauses to prevent inconsistencies or misinterpretations.
     - Preserve the document’s original intent while improving its logical flow, precision, and legal robustness.
     Ensure that changes align with legal compliance and contractual enforceability.
-    Ensure modified draft maintains the original structure, formatting, and essential clauses.
-    If lawyer ask for further modifications check your last responses and provide modification accordingly.
+    Ensure modified drafts maintains the original structure, formatting, and essential clauses.
+    If the lawyer asks for further modifications, refer to the previous last responses from json file and make changes accordingly.
+    Input query:
     {query}{document}
   expected_output: >
     A well-structured, legally precise, and professionally formatted petition or contract that:
-    - Incorporates all requested modifications seamlessly.
-    - Maintains legal clarity, consistency, and compliance.
-    - Uses professional legal language and formatting.
-    - Enhances the overall readability and persuasiveness of the document.
+      Incorporates all requested modifications seamlessly.
+      Maintains legal clarity, consistency, and compliance.
+      Uses professional legal language and formatting.
+      Enhances the overall readability and persuasiveness of the document.
   agent: modifier_agent
 
 findings_task:
   description: >
-    Your task is to carefully analyze and compare key elements across the legal case documents provided by lawyers.
-    Your primary responsibility is to ensure that the response is aligned with the lawyer's specific requests for modifications. 
-    - If the lawyer asks for similarities or differences, identify and summarize relevant legal arguments, facts, and rulings that align or diverge across documents.
-    - If the lawyer asks for key findings, extract the most significant legal conclusions and insights.
-    - If the lawyer asks for suggestions, recommend relevant U.S. Federal precedents or legal interpretations.
-    - If the lawyer asks for strengths or weaknesses, provide a structured summary of each case's advantages and vulnerabilities.
-    - Always present the analysis in a concise, lawyer-friendly format.
-    {document}{query}
+    Your task is to carefully analyze and compare relevant legal arguments, facts, and rulings that align or diverge across the uploaded documents provided by the lawyer's.
+    On lawyer's specific requests.
+      If the lawyer asks for similarities or differences, extract similarities and differences.
+      If the lawyer asks for key findings, extract the most significant legal conclusions and insights.
+      If the lawyer asks for suggestions, recommend relevant suggestions.
+      If the lawyer asks for strengths or weaknesses, extract advantages, vulnerabilities and strengths or weaknesses comparing documents.
+      if the lawyer asks for sucess score, compare with already winned case based that provide success probability score (%) based on historical data, case factors, and legal arguments, Provides a summary of key influencing factors for succes that impact the case outcome(evidence strength, jurisdiction, opposing counsel, etc.) and provide Strategic suggest improvements for success to legal strategy based on past successful cases.
+    Ensure you respond based on lawyer query only.
+    Must use bullet points.
+    The agent don't attach any draft or table to the response.
+    Input query:
+    {query}{document}
   expected_output: >
-    - Similarities : Shared legal issues, arguments, facts, and rulings.
-    - Differences : Diverging arguments, legal interpretations, or case outcomes.
-    - Key Findings : Important conclusions drawn from the documents.
-    - Relevant Precedents : Suggested U.S. Federal cases or rulings that may support the findings.
-    - Insights and Recommendations : Strategic notes for legal professionals based on the comparison.
+      Similarities : Shared legal issues, arguments, facts, and rulings.
+      Differences : Diverging arguments, legal interpretations, or case outcomes.
+      Key Findings : Important conclusions drawn from the documents.
+      Relevant Precedents : Suggested U.S. Federal cases or rulings that may support the findings.
+      Insights and Recommendations : Strategic notes for legal professionals based on the comparison.
   agent: findings_agent
+

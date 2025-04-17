@@ -82,7 +82,7 @@ def run():
         with tempfile.NamedTemporaryFile(delete=False, suffix=pathlib.Path(file.filename).suffix) as tmp_file:
             file.save(tmp_file.name)
             file_content += extract_text(tmp_file.name) + "\n"
-
+    
     # creating input dict for crew
     input_data = {
         'query': prompt if prompt else None, 
@@ -100,7 +100,6 @@ def run():
 
     # Saving input and response to history
     history(input_data, cleaned)
-
     # Return plain text response
     return Response(cleaned, mimetype="text/plain")
 
