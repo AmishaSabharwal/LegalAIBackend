@@ -61,6 +61,36 @@ def extract_text(file_path):
 
     return text
 
+def detect_intent(query: str) -> str:
+    """
+    Determine the task type based on keywords in the query.
+    Returns: one of ['drafting', 'modifier', 'findings', 'summary', 'success']
+    """
+    if not query:  # Handles None, empty string, etc.
+        return 'summary'
+
+    query_lower = query.lower()
+
+    drafting_keywords = ["draft", "create", "write", "prepare", "compose", "generate", "agreement", "petition", "contract", "make"]
+    modifier_keywords = ["modify", "edit", "revise", "update", "change", "add", "improve", "adjust", "include"]
+    findings_keywords = ["compare", "difference", "similarities", "key findings", "analyze", "insights", "recommendations", "highlight", "contrast", "insights", "strengths", "weaknesses"]
+    prediction_keywords = ["success", "predict", "chance of winning", "win percentage", "case prediction", "evaluate", "success", "probability", "score", "legal strategy"]
+    summary_keywords = ["summarize", "summary", "brief", "overview", "key points", "explain", "takeaways", "highlight"]
+
+    if any(word in query_lower for word in summary_keywords):
+        return 'summary'
+    elif any(word in query_lower for word in prediction_keywords):
+        return 'success'
+    elif any(word in query_lower for word in findings_keywords):
+        return 'findings'
+    elif any(word in query_lower for word in modifier_keywords):
+        return 'modifier'
+    elif any(word in query_lower for word in drafting_keywords):
+        return 'drafting'
+    else:
+        return 'summary'  # Default fallback
+
+
 @app.route("/", methods=['POST'])
 def run():
     """
@@ -88,9 +118,12 @@ def run():
         'query': prompt if prompt else None, 
         'document': file_content if file_content else None
     }
-        
-    # starting the crew to work on its assigned tasks
-    answer = LegalAi().crew().kickoff(inputs=input_data)
+
+    # Step 1: Detect the type of task
+    task_name = detect_intent(prompt)
+
+    # Step 2: Build and run crew for that task
+    answer = LegalAi().crew(task_name=task_name).kickoff(inputs=input_data)
     
     # Just return the raw response
     raw_response = answer.raw.strip()
@@ -100,6 +133,7 @@ def run():
 
     # Saving input and response to history
     history(input_data, cleaned)
+    
     # Return plain text response
     return Response(cleaned, mimetype="text/plain")
 

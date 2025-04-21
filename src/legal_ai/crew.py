@@ -1,58 +1,50 @@
 from crewai import Agent, Crew, Task, LLM, Process
 from crewai.project import CrewBase, agent, crew, task
-from crewai_tools import DirectorySearchTool, FileReadTool
 from dotenv import load_dotenv
 import os 
-from pathlib import Path
-import json
+from crewai_tools import DirectorySearchTool
+from src.legal_ai.tools.custom_tools import HistoryTool
+
 load_dotenv()
 
 Model = os.getenv("MODEL")
 Api_key = os.getenv("GEMINI_API_KEY")
 Embedding_model = os.getenv("EMBEDDING_MODEL")
 
-import time
-from threading import Lock
-from crewai import LLM
-
 llm = LLM(
     model=Model,
     api_key=Api_key,
-    temperature=0.7,
-    max_tokens=2000,
+    temperature=0.3,
 )
-
-
 
 laws = DirectorySearchTool(
     directory='/home/amisha/Projects/legal_ai/legal_ai/knowledge/pdf_uscAll@119-4',
-    config=dict(
-        llm=dict(
-            provider="google",
-            config=dict(
-                model="gemini",
-                api_key=Api_key
-            ),
-        ),
-        embedder=dict(
-            provider="google",
-            config=dict(
-                model=Embedding_model,
-                task_type="retrieval_document"            
-            ),
-        ),
-    )
+    config={
+        "llm": {
+            "provider": "google",
+            "config": {
+                "model": Model,
+                "api_key": Api_key
+            },
+        },
+        "embedder": {
+            "provider": "google",
+            "config": {
+                "model": Embedding_model,  # Same here since it's used for embeddings
+                "task_type": "retrieval_document",
+            },
+        },
+    }
 )
 
 @CrewBase
 class LegalAi():
-    """LegalAi crew - defines agents, tasks, and crew configuration for legal document generation and modification."""
+    """LegalAiBackend crew"""
 
     # Paths to YAML config files for agents and tasks
     agents_config = 'config/agents.yaml'
     tasks_config = 'config/tasks.yaml'
-
-
+    
     @agent
     def drafting_agent(self) -> Agent:
         """
@@ -63,8 +55,8 @@ class LegalAi():
         """
         return Agent(
             config=self.agents_config['drafting_agent'],  # Loads agent config from YAML
+            llm=llm,
             tools=[laws],
-            llm=llm
         )
 
     @agent
@@ -77,9 +69,8 @@ class LegalAi():
         """
         return Agent(
             config=self.agents_config['modifier_agent'],  # Loads agent config from YAML
-            tools=[laws],
-            llm=llm
-
+            llm=llm,
+            tools=[laws]
         )
 
     @agent
@@ -92,12 +83,11 @@ class LegalAi():
         """
         return Agent(
             config=self.agents_config['findings_agent'],  # Loads agent config from YAML
-            tools=[],
-            llm=llm
+            llm=llm,
         )
 
     @agent
-    def Summary_agent(self) -> Agent:
+    def summary_agent(self) -> Agent:
         """
         Defines the agent responsible for modifying existing petitions.
 
@@ -105,11 +95,25 @@ class LegalAi():
             Agent: An initialized summary generator agent.
         """
         return Agent(
-            config=self.agents_config['Summary_agent'],  # Loads agent config from YAML
-            tools=[laws],
-            llm=llm
-        )
+            config=self.agents_config['summary_agent'],  # Loads agent config from YAML
+            llm=llm,
+            # tools=[HistoryTool()]
+        ) 
+        
+    @agent
+    def score_prediction(self) -> Agent:
+        """
+        Defines the agent responsible for modifying existing petitions.
 
+        Returns:
+            Agent: An initialized summary generator agent.
+        """
+        return Agent(
+            config=self.agents_config['score_prediction'],  # Loads agent config from YAML
+            llm=llm,
+            tools=[laws]
+        ) 
+              
     @task
     def drafting_task(self) -> Task:
         """
@@ -133,7 +137,7 @@ class LegalAi():
         return Task(
             config=self.tasks_config['modifier_task'],  # Loads task config from YAML
         )
-              
+       
     @task
     def findings_task(self) -> Task:
         """
@@ -145,9 +149,9 @@ class LegalAi():
         return Task(
             config=self.tasks_config['findings_task'],  # Loads task config from YAML
         )
-
+             
     @task
-    def Summary_task(self) -> Task:
+    def summary_task(self) -> Task:
         """
         Defines the summary generator task for petitions.
 
@@ -155,21 +159,41 @@ class LegalAi():
             Task: A summary generator task object.
         """
         return Task(
-            config=self.tasks_config['Summary_task'],  # Loads task config from YAML
-        )  
-           
-    @crew
-    def crew(self) -> Crew:
+            config=self.tasks_config['summary_task'],  # Loads task config from YAML
+        )
+     
+    @task
+    def prediction_task(self) -> Task:
         """
-        Assembles the LegalAi crew by bundling agents and tasks.
+        Defines the summary generator task for petitions.
 
         Returns:
-            Crew: A CrewAI Crew instance ready to run tasks.
+            Task: A summary generator task object.
         """
+        return Task(
+            config=self.tasks_config['prediction_task'],  # Loads task config from YAML
+        )
+        
+    @crew
+    def crew(self, task_name: str) -> Crew:
+        """
+        Dynamically creates a crew with only the agent and task relevant to the query.
+        """
+        task_agent_map = {
+            'drafting': (self.drafting_agent(), self.drafting_task()),
+            'modifier': (self.modifier_agent(), self.modifier_task()),
+            'findings': (self.findings_agent(), self.findings_task()),
+            'summary': (self.summary_agent(), self.summary_task()),
+            'success': (self.score_prediction(), self.prediction_task())
+        }
+
+        agent, task = task_agent_map[task_name]
+
         return Crew(
-            agents=self.agents,
-            tasks=self.tasks,
+            agents=[agent],
+            tasks=[task],
             verbose=True,
-            manager_llm=llm,
-            process=Process.hierarchical,  
+            # process=Process.hierarchical,  # No need for hierarchical when it's one task
+            # manager_llm=llm,
+            llm=llm
         )
