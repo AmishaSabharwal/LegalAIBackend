@@ -8,31 +8,38 @@ import pathlib
 import tempfile
 import re
 import os
+import time
+from langchain_community.chat_message_histories import ChatMessageHistory
 
 app = Flask(__name__)
 
 CORS(app)
 
-def history(query, response):
-    """
-    Appends a new query-response pair to the chat history stored in a JSON file.
-    """
+session_histories = {}
+
+def get_session_history(session_id: str) -> ChatMessageHistory:
+    # If session_id is None or empty, generate a new one
+    if session_id not in session_histories:
+        session_histories[session_id] = ChatMessageHistory()
+    return session_histories[session_id]
+
+def history(session_id: str, query: str, document: str, response: str):
+    filename = f"memory/history_{session_id}.json"
     messages = []
 
-    try:
-        # Load existing history from file, if available
-        if os.path.exists("history.json"):
-            with open("history.json", "r") as file:
+    # Load existing history if it exists
+    if os.path.exists(filename):
+        try:
+            with open(filename, "r") as file:
                 messages = json.load(file)
-    except (json.JSONDecodeError, IOError):
-        # If file is corrupted or unreadable, start fresh
-        messages = []
+        except (json.JSONDecodeError, IOError):
+            messages = []
 
-    # Append the latest interaction
-    messages.append({"query": query, "response": response})
+    # Append the new message pair
+    messages.append({"query": query, "document": document, "response": response})
 
     # Save updated history
-    with open("history.json", "w") as file:
+    with open(filename, "w") as file:
         json.dump(messages, file, indent=4)
 
 def extract_text(file_path):
@@ -72,7 +79,7 @@ def detect_intent(query: str) -> str:
     query_lower = query.lower()
 
     drafting_keywords = ["draft", "create", "write", "prepare", "compose", "generate", "agreement", "petition", "contract", "make"]
-    modifier_keywords = ["modify", "edit", "revise", "update", "change", "add", "improve", "adjust", "include"]
+    modifier_keywords = ["modify", "edit", "revise", "update", "change", "add", "improve", "adjust"]
     findings_keywords = ["compare", "difference", "similarities", "key findings", "analyze", "insights", "recommendations", "highlight", "contrast", "insights", "strengths", "weaknesses"]
     prediction_keywords = ["success", "predict", "chance of winning", "win percentage", "case prediction", "evaluate", "success", "probability", "score", "legal strategy"]
     summary_keywords = ["summarize", "summary", "brief", "overview", "key points", "explain", "takeaways", "highlight"]
@@ -90,6 +97,12 @@ def detect_intent(query: str) -> str:
     else:
         return 'summary'  # Default fallback
 
+session_histories = {}
+
+def get_session_history(session_id: str) -> ChatMessageHistory:
+    if session_id not in session_histories:
+        session_histories[session_id] = ChatMessageHistory()
+    return session_histories[session_id]
 
 @app.route("/", methods=['POST'])
 def run():
@@ -100,12 +113,14 @@ def run():
     if request.content_type.startswith('multipart/form-data'):
         files = request.files.getlist('document')
         prompt = request.form.get('query')
+        session_id = request.form.get('session_id')
 
     # Check if the request is of type application/json (e.g., from a frontend app)
     elif request.content_type == 'application/json':  
         files = request.files.getlist('document')  # This may often be None for pure JSON requests
         data = json.loads(request.data.decode('utf-8')) # Load and decode the raw JSON payload
         prompt = data.get('query')
+        session_id = data.get('session_id')
 
     file_content = ""
     for file in files:
@@ -113,29 +128,37 @@ def run():
             file.save(tmp_file.name)
             file_content += extract_text(tmp_file.name) + "\n"
     
-    # creating input dict for crew
+    chat_history = get_session_history(session_id)
+    history_text = "\n".join([
+        f"{msg.type.upper()}: {msg.content}" for msg in chat_history.messages
+    ])
+    # Step 4: Build Input for Crew
     input_data = {
-        'query': prompt if prompt else None, 
-        'document': file_content if file_content else None
+        'query': prompt,
+        'document': file_content if file_content else "",
+        'history': history_text
     }
 
-    # Step 1: Detect the type of task
+    # Step 5: Run the Crew
     task_name = detect_intent(prompt)
-
-    # Step 2: Build and run crew for that task
-    answer = LegalAi().crew(task_name=task_name).kickoff(inputs=input_data)
-    
+    answer = LegalAi().crew(task_name=task_name, session_id=session_id).kickoff(inputs=input_data)
     # Just return the raw response
     raw_response = answer.raw.strip()
 
-    # Remove markdown code fences
-    cleaned = re.sub(r"^```(?:[a-zA-Z]*)?|```$", "", raw_response.strip())
+    text = re.sub(r'<[^>]+>', '', raw_response)
+    text = re.sub(r'\\(begin|end|usepackage|documentclass|geometry|textbf|Large|vspace|hrulefill|RaggedRight|center)\{.*?\}', '', text)
 
+    cleaned = re.sub(r"^```(?:[a-zA-Z]*)?|```$", "", text.strip())
+
+    # Step 6: Update History
+    chat_history.add_user_message(prompt)
+    chat_history.add_ai_message(cleaned)
+    session_id = session_id or "1234"
     # Saving input and response to history
-    history(input_data, cleaned)
+    history( session_id, prompt, file_content, cleaned)
     
     # Return plain text response
     return Response(cleaned, mimetype="text/plain")
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(debug=True, port=8080)

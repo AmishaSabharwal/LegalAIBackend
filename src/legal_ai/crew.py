@@ -2,9 +2,10 @@ from crewai import Agent, Crew, Task, LLM, Process
 from crewai.project import CrewBase, agent, crew, task
 from dotenv import load_dotenv
 import os 
-from crewai_tools import DirectorySearchTool
-from src.legal_ai.tools.custom_tools import HistoryTool
-
+from src.legal_ai.tools.laws_tool import generate_rag_response
+from crewai.memory import LongTermMemory, ShortTermMemory, EntityMemory
+from crewai.memory.storage.rag_storage import RAGStorage
+from crewai.memory.storage.ltm_sqlite_storage import LTMSQLiteStorage
 load_dotenv()
 
 Model = os.getenv("MODEL")
@@ -17,25 +18,7 @@ llm = LLM(
     temperature=0.3,
 )
 
-laws = DirectorySearchTool(
-    directory='/home/amisha/Projects/legal_ai/legal_ai/knowledge/pdf_uscAll@119-4',
-    config={
-        "llm": {
-            "provider": "google",
-            "config": {
-                "model": Model,
-                "api_key": Api_key
-            },
-        },
-        "embedder": {
-            "provider": "google",
-            "config": {
-                "model": Embedding_model,  # Same here since it's used for embeddings
-                "task_type": "retrieval_document",
-            },
-        },
-    }
-)
+laws = generate_rag_response
 
 @CrewBase
 class LegalAi():
@@ -57,6 +40,7 @@ class LegalAi():
             config=self.agents_config['drafting_agent'],  # Loads agent config from YAML
             llm=llm,
             tools=[laws],
+            max_iter=1,
         )
 
     @agent
@@ -70,7 +54,8 @@ class LegalAi():
         return Agent(
             config=self.agents_config['modifier_agent'],  # Loads agent config from YAML
             llm=llm,
-            tools=[laws]
+            tools=[laws],
+            max_iter=1,
         )
 
     @agent
@@ -84,6 +69,8 @@ class LegalAi():
         return Agent(
             config=self.agents_config['findings_agent'],  # Loads agent config from YAML
             llm=llm,
+            tools=[laws],
+            max_iter=1,
         )
 
     @agent
@@ -97,7 +84,8 @@ class LegalAi():
         return Agent(
             config=self.agents_config['summary_agent'],  # Loads agent config from YAML
             llm=llm,
-            # tools=[HistoryTool()]
+            tools=[laws],
+            max_iter=1,
         ) 
         
     @agent
@@ -111,7 +99,8 @@ class LegalAi():
         return Agent(
             config=self.agents_config['score_prediction'],  # Loads agent config from YAML
             llm=llm,
-            tools=[laws]
+            tools=[laws],
+            max_iter=1,
         ) 
               
     @task
@@ -175,7 +164,7 @@ class LegalAi():
         )
         
     @crew
-    def crew(self, task_name: str) -> Crew:
+    def crew(self, task_name: str, session_id: str) -> Crew:
         """
         Dynamically creates a crew with only the agent and task relevant to the query.
         """
@@ -193,7 +182,5 @@ class LegalAi():
             agents=[agent],
             tasks=[task],
             verbose=True,
-            # process=Process.hierarchical,  # No need for hierarchical when it's one task
-            # manager_llm=llm,
-            llm=llm
+            llm=llm,
         )
