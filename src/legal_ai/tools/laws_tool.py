@@ -1,7 +1,6 @@
 from crewai.tools import tool
 import redis
 from google import genai
-from typing import List
 import numpy as np
 from dotenv import load_dotenv
 import os
@@ -9,7 +8,6 @@ from pydantic import BaseModel
 
 # Load environment variables from .env file
 load_dotenv()
-
 # Retrieve configuration from environment variables
 MODEL = os.getenv("MODEL")
 API_KEY = os.getenv("REDIS_API_KEY")
