@@ -130,7 +130,7 @@ def run():
     task_name = detect_intent(prompt)
 
     # Execute the appropriate Crew task
-    answer = LegalAi().crew(task_name=task_name, session_id=session_id).kickoff(inputs=input_data)
+    answer = LegalAi().crew(task_name=task_name).kickoff(inputs=input_data)
 
     # Clean and sanitize raw response from AI
     raw_response = answer.raw.strip()
