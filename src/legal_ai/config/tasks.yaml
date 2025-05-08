@@ -12,7 +12,7 @@ drafting_task:
         - Termination Clause: conditions under which parties may terminate the contract.
       - Confidentiality: Define obligations not to disclose confidential information.
       - Intellectual Property: Clarify ownership of created materials, rights transfer, etc.
-      - Governing Law: mention applicable U.S. laws or state statutes wherever relevant.
+      - Governing Law: mention applicable U.S. laws or state statutes wherever relevant use the tool.
       - Signature section for both parties.(part 1 on left side and other on right side)
         - Signature:
         - Name: 
@@ -33,16 +33,17 @@ drafting_task:
         - Address: 
         - Date: 
       - Include Verification and Notary (if required)
-      - Mention applicable laws or state statutes wherever relevant.
+      - Mention applicable laws or state statutes wherever relevant use the tool.
     Respond in a structured format.  
     Ensure draft maintains the structure, formatting, and essential clauses.
-    If you don't know state mention all related laws and sections.
+    If you don't know U.S. state mention all related U.S. laws and sections and always mention section number.
     Use parties name instead Party A, Party B...
-    Always mention sections applies to the document.
+    Use company name instead Company A, company 1.
+    If drafting query is outside the U.S. respond:"I can draft for U.S. only this is outside my scope."
     Input query:{query}
   expected_output: >
       - Draft professional, legally sound documents.
-      - Include relevant clauses, laws and sections dynamically using tool.
+      - Mention relevant section number, section title, section content using tool.
       - Ensure the document aligns with the user's purpose (business, service agreement, legal relief, etc.)
   agent: drafting_agent
 
@@ -56,8 +57,10 @@ modifier_task:
     - Preserve the document’s original intent while improving its logical flow, precision, and legal robustness.
     Ensure that changes align with legal compliance and contractual enforceability.
     Ensure modified draft maintains the original structure, formatting, and essential clauses.
-    If lawyer asks for further modifications you need any document check history apply modifications.
+    If lawyer asks for further modifications you need any document check use history as memory apply modifications.
     Always apply any modifications on last response.
+    If the document is not a contract or petition say: "The document you have provided is not relevant".
+    If modifications query or document is outside the U.S. respond:"I can draft for U.S. only this is outside my scope."
     Previous conversation:{history}
     Current query:{query}
     Document:{document}
@@ -71,8 +74,7 @@ modifier_task:
 
 findings_task:
   description: >
-    Your task is to analyze and compare legal arguments, facts, and rulings across the uploaded legal documents provided by the lawyer.
-
+    Your task is to analyze and compare U.S. legal arguments, facts, and rulings across the uploaded legal documents provided by the lawyer.
     Handle specific requests as follows:
     - If the lawyer asks for similarities, extract and present them clearly.
     - If the lawyer asks for differences, extract and present them clearly.
@@ -81,6 +83,8 @@ findings_task:
     - If the lawyer asks for strengths or weaknesses, identify the legal advantages, risks, and vulnerabilities within the documents.
     - If the lawyer does not ask for anything specific, provide all of the above (similarities, differences, findings, suggestions, strengths, and weaknesses).
     Respond strictly based on the lawyer’s query — do not provide additional insights beyond what was asked.
+    If the document is not a contract or petition say: "The document you have provided is not relevant".
+    If findings query or document is outside the U.S. respond:"I can draft for U.S. only this is outside my scope."
     Input query: {query}{document}
     Previous conversation:{history}
   expected_output: >
@@ -89,7 +93,7 @@ findings_task:
 
 summary_task:
   description: >
-    Your task is to answer general query and produce a concise summary by carefully reading the shared contract or petition.
+    Your task is to handle general query's and produce a concise summary by carefully reading the shared contract or petition U.S, only.
     If lawyer asked for summary:
       For contracts, extract and summarize:
         - Title of the contract
@@ -109,27 +113,38 @@ summary_task:
         - Key facts and timeline
         - Legal counts or claims
         - Relief/prayer requested
-    If lawyer asked for any specific thing from the document answer accordingly.
+    If lawyer asked for any specific thing from the document respond accordingly.
     Respond only with clear, structured bullet points or short paragraphs, avoiding long-form legal language or repetition.
-    If query is not for summary answer accordingly.
-    If lawyer not provided any document and you need any document use memory.
+    If query is general introduction or any other but not for summary respond accordingly.
+    If the document is not a contract or petition say: "The document you have provided is not relevant".
+    If summary query or document is outside the U.S. respond:"I can draft for U.S. only this is outside my scope."
+    Handle every query other than summary.
     Input query:{query}{document}
-    Previous conversation:{history}
+    If lawyer ask for previous query related:{history}
   expected_output: >
+    Handle general query's
     A concise and structured summary of the contract or petition with highlights of key content, legal exposure, or omissions.
   agent: summary_agent
 
 prediction_task:
   description: >
-    Analyze the following case based on the provided prompt and documents by the laywer.
-    Your response should include:
-    1. A success probability score (%) based on historical data, case factors, and legal arguments.
-    2. Provides a summary of key influencing factors that impact the case outcome(evidence strength, jurisdiction, opposing counsel, etc.).
-    3. Strategic suggest improvements to legal strategy based on past successful cases.
+    You are a U.S. legal case comparison assistant your responsibilities include:
+    - Given two legal case descriptions (including facts, court details, or summaries), analyze their similarity based on legal context, facts, involved parties, issues, and outcomes.
+        - The ongoing case(pending judgment)
+        - The won case(with a favorable outcome)
+    - Extract and compare the following legal features:
+        - Legal sections cited or violated
+        - Strength and type of presented evidence
+        - Quality and structure of legal arguments
+        - Jurisdiction and court behavior (judge rulings if available)
+    - Assign a Success Probability Score (0–100%) based on:
+        - Document similarity
+        - Legal argument strength alignment
+        - Prior successful case strategies
+    - If the cases are not similar, return a score of 0 and clearly state "Cases do not match."
+    If the document is not a contract or petition say: "The document you have provided is not relevant".
+    If predicting query or document is outside the U.S. respond:"I can draft for U.S. only this is outside my scope."
     Input query:{query}{document}
-    Previous conversation:{history}
   expected_output: >
-   - Success Probability Score
-    - Key Influencing Factors
-    - Strategy Recommendations
+    - Success Probability Score
   agent: score_prediction
