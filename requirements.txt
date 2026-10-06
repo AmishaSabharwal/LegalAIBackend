@@ -5,4 +5,5 @@ pypdf
 python-dotenv
 crewai
 langchain-community
-tiktoken
+tiktoken==0.7.0
+gunicorn
